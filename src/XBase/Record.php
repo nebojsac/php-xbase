@@ -80,12 +80,20 @@ class Record
         return $this->recordIndex;
     }
 
-    public function getString($columnName)
+/**
+ * Fetches the field value as a string.
+ * Trimming was made optional because it didn't work well with tamSync DBF files
+ * 
+ * @param  string  $columnName Column name, ex 'REC'.
+ * @param  boolean $trimData   By default, trims the value before returning.
+ * @return string
+ */
+    public function getString($columnName, $trimData = true)
     {
         $column = $this->table->getColumn($columnName);
 
         if ($column->getType() == self::DBFFIELD_TYPE_CHAR) {
-            return $this->forceGetString($columnName);
+            return $this->forceGetString($columnName, $trimData);
         } else {
             $result = $this->getObject($column);
 
@@ -101,9 +109,21 @@ class Record
         }
     }
 
-    public function forceGetString($columnName)
+/**
+ * Fetches the field value as a string.
+ * Trimming was made optional because it didn't work well with tamSync DBF files
+ * 
+ * @param  string  $columnName Column name, ex 'REC'.
+ * @param  boolean $trimData   By default, trims the value before returning.
+ * @return string
+ */
+    public function forceGetString($columnName, $trimData = true)
     {
-        $data = trim($this->choppedData[$columnName]);
+        if ($trimData) {
+            $data = trim($this->choppedData[$columnName]);
+        } else {
+            $data = $this->choppedData[$columnName];
+        }
 
         if ($this->table->getConvertFrom()) {
             $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
